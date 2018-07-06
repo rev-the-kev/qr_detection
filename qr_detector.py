@@ -13,29 +13,45 @@ upright, and thus we can reduce the complexity of the code.
 import cv2
 import numpy as np
 import cmath
-
-#Given two points, this function returns the Euclidean distance
-#between the two.
+'''
+Given two points, this function returns the Euclidean distance
+between the two.
+'''
 def getEuclideanDistance(P, Q):
     D = np.subtract(P, Q)
     return np.linalg.norm(D)
+'''
+This function takes in three points. Using vector norms and cross products,
+it is able to calculate the shortest distance between the third point and
+the line created by the first two. It returns this minimum distance.
+'''
+def distanceFromLine(L, M, J, img):
+	#begin debugging block
+	####################################
+	print "L"
+	print L
+	print "M"
+	print M
+	print "J"
+	print J
+	cv2.imshow('Original Image', img)
+	cv2.circle(img, (L[0], L[1]), 2, (0, 0, 255), -1)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
+	####################################
+	#end debugging block
+	a = -((M[1] - L[1]) / (M[0] - L[0]))
+	b = 1.0
+	c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
 
-#This function takes in three points. Using vector norms and cross products,
-#it is able to calculate the shortest distance between the third point and
-#the line created by the first two. It returns this minimum distance.
-def distanceFromLine(L, M, J):
-	*/ 
-    a = -((M[1] - L[1]) / (M[0] - L[0]))
-    b = 1.0
-    c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
-
-    pdist = (a * J[0] + (b * J[1]) + c) / np.sqrt((a * a) + (b*b))
-    return pdist
-
-#Two points are passed into this function. The function returns the slope
-#of the line created by the two points or zero if the two points are
-#vertically aligned. A flag is also returned. The flag is 0 if the line
-#is vertical, else it is 1.
+	pdist = (a * J[0] + (b * J[1]) + c) / np.sqrt((a * a) + (b*b))
+	return pdist
+'''
+Two points are passed into this function. The function returns the slope
+of the line created by the two points or zero if the two points are
+vertically aligned. A flag is also returned. The flag is 0 if the line
+is vertical, else it is 1.
+'''
 def getSlope(A, B):
     dx = B[0] - A[0]
     dy = B[1] - A[1]
@@ -219,7 +235,7 @@ def main():
             median2 = C
 
         top = outlier;
-        dist = distanceFromLine(centroids[median1], centroids[median2], centroids[outlier])
+        dist = distanceFromLine(centroids[median1], centroids[median2], centroids[outlier], img)
         slope, align = getSlope(centroids[median1], centroids[median2])
 
         src = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], dtype = "float32")

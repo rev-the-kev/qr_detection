@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-#This script performs three main tasks after loading an image. It first
-#detects a QR code within the image, then determines the lateral distance the code
-#is located from the camera. Finally, it decodes the QR code.
-#Written by Kevin Daniel, May 30, 2018. Code written using QR detection methods
-#implemented by Bharath Prabhuswamy.
-#https://github.com/bharathp666/opencv_qr
-#Assumption: reference code accounts for possibility of QR code not being aligned in the correct
-#orientation. For our particular application we know that the QR code will always be
-#upright, and thus we can reduce the complexity of the code.
-
+'''
+This script performs three main tasks after loading an image. It first
+detects a QR code within the image, then determines the lateral distance the code
+is located from the camera. Finally, it decodes the QR code.
+Written by Kevin Daniel, May 30, 2018. Code written using QR detection methods
+implemented by Bharath Prabhuswamy.
+https://github.com/bharathp666/opencv_qr
+Assumption: reference code accounts for possibility of QR code not being aligned in the correct
+orientation. For our particular application we know that the QR code will always be
+upright, and thus we can reduce the complexity of the code.
+'''
 import cv2
 import numpy as np
 import cmath
@@ -23,15 +24,13 @@ def getEuclideanDistance(P, Q):
 #it is able to calculate the shortest distance between the third point and
 #the line created by the first two. It returns this minimum distance.
 def distanceFromLine(L, M, J):
+	*/ 
     a = -((M[1] - L[1]) / (M[0] - L[0]))
     b = 1.0
     c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
 
     pdist = (a * J[0] + (b * J[1]) + c) / np.sqrt((a * a) + (b*b))
     return pdist
-    # A21 = np.subtract(A2, A1)
-    # A1B = np.subtract(A1, B)
-    # return np.linalg.norm(np.cross(A21, A1B))/np.linalg.norm(A21)
 
 #Two points are passed into this function. The function returns the slope
 #of the line created by the two points or zero if the two points are
@@ -156,8 +155,8 @@ def main():
     CV_QR_WEST = 3
     CV_LIST = [0, 1, 2, 3]
 
-    img = cv2.imread('angled_qr.jpg', 1)
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.imread('test_img.png', 1)
+    #gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     canny_img = cv2.Canny(img, 100, 200)
     cont_img, contours, hierarchy = cv2.findContours(canny_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     mark = 0
@@ -247,9 +246,6 @@ def main():
             orientation = CV_QR_WEST
 
         if (top < len(contours) and right < len(contours) and bottom < len(contours) and cv2.contourArea(contours[top]) > 10 and cv2.contourArea(contours[right]) > 10 and cv2.contourArea(contours[bottom]) > 10):
-            # tempL = getVertices(contours, top, slope)
-            # tempM = getVertices(contours, right, slope)
-            # tempO = getVertices(contours, bottom, slope)
             tempL = getVertices(contours, top, slope)
             tempM = getVertices(contours, right, slope)
             tempO = getVertices(contours, bottom, slope)
@@ -265,16 +261,10 @@ def main():
             src[3] = O[3][0]
 
             if (len(src) == 4 and len(dst) == 4):
-                cv2.imshow('Test Display', img)
+                cv2.imshow('Original Image', img)
                 warp_matrix = cv2.getPerspectiveTransform(src, dst)
                 qr_raw = cv2.warpPerspective(img, warp_matrix, (100, 100))
-                cv2.imshow('QR_raw', qr_raw)
-                qr = cv2.copyMakeBorder(qr_raw, 10, 10, 10, 10, cv2.BORDER_CONSTANT, (255, 255, 255))
-                cv2.imshow('QR', qr)
-                qr_gray = cv2.cvtColor(qr, cv2.COLOR_BGR2GRAY)
-                cv2.imshow('QR_Gray', qr_gray)
-                ret,qr_thresh = cv2.threshold(qr_gray, 127, 255, cv2.THRESH_BINARY)
-                cv2.imshow('QR_Thresh', qr_thresh)
+                cv2.imshow('QR Code', qr_raw)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 if __name__ == '__main__':

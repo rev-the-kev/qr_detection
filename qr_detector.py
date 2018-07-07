@@ -26,26 +26,29 @@ it is able to calculate the shortest distance between the third point and
 the line created by the first two. It returns this minimum distance.
 '''
 def distanceFromLine(L, M, J, img):
-	#begin debugging block
-	####################################
-	print "L"
-	print L
-	print "M"
-	print M
-	print "J"
-	print J
-	cv2.imshow('Original Image', img)
-	cv2.circle(img, (L[0], L[1]), 2, (0, 0, 255), -1)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
-	####################################
-	#end debugging block
-	a = -((M[1] - L[1]) / (M[0] - L[0]))
-	b = 1.0
-	c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
-
-	pdist = (a * J[0] + (b * J[1]) + c) / np.sqrt((a * a) + (b*b))
-	return pdist
+    #begin debugging block
+    ####################################
+    ####################################
+    print "L"
+    print L
+    print "M"
+    print M
+    print "J"
+    print J
+    #cv2.circle(img, (L[0], L[1]), 2, (0, 0, 255), -1)
+    #cv2.circle(img, (M[0], M[1]), 2, (0, 0, 255), -1)
+    #cv2.circle(img, (J[0], J[1]), 2, (0, 0, 255), -1)
+    cv2.imshow('Original Image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    ####################################
+    ####################################
+    #end debugging block
+    a = -((M[1] - L[1]) / (M[0] - L[0]))
+    b = 1.0
+    c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
+    pdist = (a * J[0] + (b * J[1]) + c) / np.sqrt((a * a) + (b*b))
+    return pdist
 '''
 Two points are passed into this function. The function returns the slope
 of the line created by the two points or zero if the two points are
@@ -216,6 +219,28 @@ def main():
                 elif(mark == 2):
                     C = x
                 mark += 1
+    #begin debugging block
+    ####################################
+    ####################################
+    print "A"
+    print A
+    print "B"
+    #print B
+    print "C"
+    #print C
+    print "mark"
+    print mark
+    print "length of contours list"
+    print (len(contours))
+    cv2.drawContours(img, contours, -1, (0, 0, 255), 1)
+    #cv2.drawContours(img, contours, B, (0, 255, 0), 1)
+    #cv2.drawContours(img, contours, C, (255, 0, 0), 1)
+    cv2.imshow('Original Image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    ####################################
+    ####################################
+    #end debugging block
     if (mark >= 3):
         AB = getEuclideanDistance(centroids[A], centroids[B])
         BC = getEuclideanDistance(centroids[B], centroids[C])

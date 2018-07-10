@@ -131,18 +131,23 @@ def updateCornerOr(orientation, IN, CV_LIST):
 
     return [M0, M1, M2, M3]
 
-def getIntersectionPoint(a1, a2, b1, b2):
+def getIntersectionPoint(a1, a2, b1, b2, img):
     intersection = [0, 0]
-    p = a1
-    q = b1
     r = np.subtract(a2, a1)
     s = np.subtract(b2, b1)
 
     if (np.cross(r,s) == 0):
         return False, intersection
 
-    t = np.cross(np.subtract(q, p), s)/np.cross(r,s)
-    intersection = p + t*r
+    ma = (float(a2[1]) - a1[1])/(a2[0] - a1[0])
+    mb = (float(b2[1]) - b1[1])/(b2[0] - b1[0])
+    ba = a1[1] - ma * a1[0]
+    bb = b1[1] - mb * b1[0]
+
+    intersection[0] = np.absolute((bb - ba)/(mb - ma))
+    intersection[1] = int(np.absolute(ma * intersection[0] + ba))
+    intersection[0] = int(intersection[0])
+
     return True, intersection
 
 def cross(v1, v2):
@@ -157,10 +162,10 @@ def main():
     CV_LIST = [0, 1, 2, 3]
 
     img = cv2.imread('test_img.png', 1)
-    blur = cv2.GaussianBlur(img, (3,3), 0)
-    gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred_img = cv2.GaussianBlur(gray_img, (3,3), 0)
     #Implement adaptive thresholding in the future for robustness
-    ret, thresh_img = cv2.threshold(gray_img, 127, 255, cv2.THRESH_BINARY)
+    ret, thresh_img = cv2.threshold(blurred_img, 127, 255, cv2.THRESH_BINARY)
     canny_img = cv2.Canny(thresh_img, 100, 200)
     cont_img, contours, hierarchy = cv2.findContours(canny_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     mark = 0
@@ -255,13 +260,24 @@ def main():
             L = updateCornerOr(orientation, tempL, CV_LIST)
             M = updateCornerOr(orientation, tempM, CV_LIST)
             O = updateCornerOr(orientation, tempO, CV_LIST)
-            iflag, N = getIntersectionPoint(M[1][0], M[2][0], O[3][0], O[2][0])
+            iflag, N = getIntersectionPoint(M[1][0], M[2][0], O[3][0], O[2][0], img)
 
             src[0] = L[0][0]
             src[1] = M[1][0]
             src[2] = N
             src[3] = O[3][0]
-
+            #begin debugging block
+            ##################################################################
+            cv2.circle(img, (M[1][0][0], M[1][0][1]), 2, (0,0,255), -1)
+            cv2.circle(img, (M[2][0][0], M[2][0][1]), 2, (0,0,255), -1)
+            cv2.circle(img, (O[3][0][0], O[3][0][1]), 2, (0,0,255), -1)
+            cv2.circle(img, (O[2][0][0], O[2][0][1]), 2, (0,0,255), -1)
+            cv2.circle(img, (src[0][0], src[0][1]), 2, (0,255,0), -1)
+            cv2.circle(img, (src[1][0], src[1][1]), 2, (0,255,0), -1)
+            cv2.circle(img, (src[2][0], src[2][1]), 2, (0,255,0), -1)
+            cv2.circle(img, (src[3][0], src[3][1]), 2, (0,255,0), -1)
+            ##################################################################
+            #end debugging block
             cv2.imshow('Original Image', img)
             warp_matrix = cv2.getPerspectiveTransform(src, dst)
             qr_raw = cv2.warpPerspective(img, warp_matrix, (100, 100))

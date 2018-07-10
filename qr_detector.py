@@ -25,25 +25,7 @@ This function takes in three points. Using vector norms and cross products,
 it is able to calculate the shortest distance between the third point and
 the line created by the first two. It returns this minimum distance.
 '''
-def distanceFromLine(L, M, J, img):
-    #begin debugging block
-    ####################################
-    ####################################
-    print "L"
-    print L
-    print "M"
-    print M
-    print "J"
-    print J
-    #cv2.circle(img, (L[0], L[1]), 2, (0, 0, 255), -1)
-    #cv2.circle(img, (M[0], M[1]), 2, (0, 0, 255), -1)
-    #cv2.circle(img, (J[0], J[1]), 2, (0, 0, 255), -1)
-    cv2.imshow('Original Image', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    ####################################
-    ####################################
-    #end debugging block
+def distanceFromLine(L, M, J):
     a = -((M[1] - L[1]) / (M[0] - L[0]))
     b = 1.0
     c = ((M[1] - L[1]) / (M[0] - L[0])) * L[0]- L[1]
@@ -175,8 +157,11 @@ def main():
     CV_LIST = [0, 1, 2, 3]
 
     img = cv2.imread('test_img.png', 1)
-    #gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    canny_img = cv2.Canny(img, 100, 200)
+    blur = cv2.GaussianBlur(img, (3,3), 0)
+    gray_img = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+    #Implement adaptive thresholding in the future for robustness
+    ret, thresh_img = cv2.threshold(gray_img, 127, 255, cv2.THRESH_BINARY)
+    canny_img = cv2.Canny(thresh_img, 100, 200)
     cont_img, contours, hierarchy = cv2.findContours(canny_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     mark = 0
 
@@ -208,9 +193,6 @@ def main():
                 k = hierarchy[0][k][2]
                 c += 1
 
-            if (hierarchy[0][k][2] != -1):
-                c += 1
-
             if (c >= 5):
                 if(mark == 0):
                     A = x
@@ -219,28 +201,7 @@ def main():
                 elif(mark == 2):
                     C = x
                 mark += 1
-    #begin debugging block
-    ####################################
-    ####################################
-    print "A"
-    print A
-    print "B"
-    #print B
-    print "C"
-    #print C
-    print "mark"
-    print mark
-    print "length of contours list"
-    print (len(contours))
-    cv2.drawContours(img, contours, -1, (0, 0, 255), 1)
-    #cv2.drawContours(img, contours, B, (0, 255, 0), 1)
-    #cv2.drawContours(img, contours, C, (255, 0, 0), 1)
-    cv2.imshow('Original Image', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    ####################################
-    ####################################
-    #end debugging block
+
     if (mark >= 3):
         AB = getEuclideanDistance(centroids[A], centroids[B])
         BC = getEuclideanDistance(centroids[B], centroids[C])
@@ -260,7 +221,7 @@ def main():
             median2 = C
 
         top = outlier;
-        dist = distanceFromLine(centroids[median1], centroids[median2], centroids[outlier], img)
+        dist = distanceFromLine(centroids[median1], centroids[median2], centroids[outlier])
         slope, align = getSlope(centroids[median1], centroids[median2])
 
         src = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], dtype = "float32")
@@ -301,12 +262,11 @@ def main():
             src[2] = N
             src[3] = O[3][0]
 
-            if (len(src) == 4 and len(dst) == 4):
-                cv2.imshow('Original Image', img)
-                warp_matrix = cv2.getPerspectiveTransform(src, dst)
-                qr_raw = cv2.warpPerspective(img, warp_matrix, (100, 100))
-                cv2.imshow('QR Code', qr_raw)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+            cv2.imshow('Original Image', img)
+            warp_matrix = cv2.getPerspectiveTransform(src, dst)
+            qr_raw = cv2.warpPerspective(img, warp_matrix, (100, 100))
+            cv2.imshow('QR Code', qr_raw)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 if __name__ == '__main__':
     main()
